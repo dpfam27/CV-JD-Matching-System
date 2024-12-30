@@ -1,6 +1,3 @@
-# Hệ Thống Đối Chiếu CV-JD Sử Dụng Deep Learning
- An system implementing AI to support HR activities
- 
 # CV-JD-Matching-System
 Hệ thống ứng dụng AI hỗ trợ hoạt động nhân sự
 
