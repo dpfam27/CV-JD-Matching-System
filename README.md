@@ -15,7 +15,7 @@ Hệ thống ứng dụng AI để:
 - Giao diện web tương tác
 
 ## Cài đặt
-1. Clone repository: git clone https://github.com/username/CV-JD-Matching-System.git
+1. Clone repository: git clone https://github.com/dpfam27/CV-JD-Matching-System.git
 2. Tạo môi trường ảo: .\venv\Scripts\Activate.ps1
 3. Cài đặt thư viện: pip install -r requirements.txt
 4. Chạy script cài đặt
