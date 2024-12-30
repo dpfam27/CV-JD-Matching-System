@@ -1,7 +1,5 @@
-# CV-JD-Matching-System
-Hệ thống ứng dụng AI hỗ trợ hoạt động nhân sự
-
 # Tổng quan dự án và setup nhanh
+## CV-JD-Matching-System
 Hệ thống đối chiếu CV-JD sử dụng deep learning
 
 ## Dự án đối chiếu CV-JD
