@@ -2,7 +2,7 @@
 ## CV-JD-Matching-System
 Hệ thống đối chiếu CV-JD sử dụng deep learning
 
-## Dự án đối chiếu CV-JD
+## Scope
 Hệ thống ứng dụng AI để:
 1. Phân tích CV và Mô tả công việc (JD)
 2. Đối chiếu và tính toán điểm tương đồng
