@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jobscan Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        header {
+            background-color: #fff;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2557a7;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Match Score Section */
+        .match-score {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 15px solid #2557a7;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2557a7;
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Analysis Section */
+        .analysis {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 4px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            background: #2557a7;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* Hard Skills Match */
+        .skills-match {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .skill-name {
+            font-weight: 500;
+        }
+
+        .skill-count {
+            text-align: right;
+            color: #666;
+        }
+
+        /* Suggestions */
+        .suggestions {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .suggestion-item {
+            border-left: 4px solid #2557a7;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            color: #444;
+            margin-bottom: 1rem;
+        }
+
+        .label {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin-right: 0.5rem;
+        }
+
+        .label-blue {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .label-green {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .label-yellow {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Jobscan</div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Match Score -->
+        <div class="match-score">
+            <div class="score-circle">85%</div>
+            <h2>Great Match!</h2>
+            <p>Your resume matches 85% of the job requirements</p>
+        </div>
+
+        <div class="results-grid">
+            <!-- Analysis Section -->
+            <div class="analysis">
+                <h2>Detailed Analysis</h2>
+                
+                <!-- Hard Skills -->
+                <h3>Hard Skills Match</h3>
+                <div class="skills-match">
+                    <div class="skill-name">JavaScript</div>
+                    <div class="skill-count">3/3</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 100%"></div>
+                </div>
+
+                <div class="skills-match">
+                    <div class="skill-name">React</div>
+                    <div class="skill-count">2/3</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 66%"></div>
+                </div>
+
+                <div class="skills-match">
+                    <div class="skill-name">Node.js</div>
+                    <div class="skill-count">1/2</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 50%"></div>
+                </div>
+
+                <!-- Keyword Match -->
+                <h3>Keyword Match</h3>
+                <div style="margin-bottom: 1rem;">
+                    <span class="label label-blue">agile</span>
+                    <span class="label label-blue">frontend</span>
+                    <span class="label label-green">web development</span>
+                    <span class="label label-yellow">missing: TypeScript</span>
+                    <span class="label label-yellow">missing: AWS</span>
+                </div>
+            </div>
+
+            <!-- Suggestions -->
+            <div class="suggestions">
+                <h2>Improvement Suggestions</h2>
+                <div class="suggestion-item">
+                    <h3>Add Missing Keywords</h3>
+                    <p>Include TypeScript and AWS in your skills section</p>
+                </div>
+                <div class="suggestion-item">
+                    <h3>Quantify Achievements</h3>
+                    <p>Add metrics to your React development experience</p>
+                </div>
+                <div class="suggestion-item">
+                    <h3>Technical Skills</h3>
+                    <p>Highlight more Node.js projects and experience</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
