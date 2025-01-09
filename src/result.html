@@ -159,6 +159,84 @@
             background: #fff3e0;
             color: #f57c00;
         }
+        .course-recommendations {
+            margin-top: 2rem;
+        }
+
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .course-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .course-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #e3f2fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: #2557a7;
+        }
+
+        .course-card h3 {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .course-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .course-link {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #2557a7;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            text-align: center;
+            transition: background 0.2s ease;
+        }
+
+        .course-link:hover {
+            background: #1d4589;
+        }
+
+        .duration, .platform {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
     </style>
 </head>
 <body>
@@ -236,5 +314,52 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Course Recommendations -->
+<div class="course-recommendations">
+    <h2>Course Recommendations</h2>
+    <div class="courses-grid">
+        <div class="course-card">
+            <div class="course-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-4V6"></path><circle cx="12" cy="12" r="10"></circle></svg>
+            </div>
+            <h3>TypeScript Basic to High-level</h3>
+            <p>Master TypeScript to improve your Frontend development skills</p>
+            <div class="course-meta">
+                <span class="duration">40 hours</span>
+                <span class="platform">Udemy</span>
+            </div>
+            <a href="#" class="course-link">View</a>
+        </div>
+
+        <div class="course-card">
+            <div class="course-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+            </div>
+            <h3>AWS for Developer</h3>
+            <p>Learn how to deploy and manage applications on AWS Cloud</p>
+            <div class="course-meta">
+                <span class="duration">50 hours</span>
+                <span class="platform">Coursera</span>
+            </div>
+            <a href="#" class="course-link">View</a>
+        </div>
+
+        <div class="course-card">
+            <div class="course-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </div>
+            <h3>Node.js Advanced</h3>
+            <p>Develop Node.js applications with modern design patterns</p>
+            <div class="course-meta">
+                <span class="duration">35 hours</span>
+                <span class="platform">LinkedIn Learning</span>
+            </div>
+            <a href="#" class="course-link">View</a>
+        </div>
+    </div>
+</div>
+</div>
 </body>
 </html>
