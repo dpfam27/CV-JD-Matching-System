@@ -247,12 +247,12 @@ if __name__ == "__main__":
     preprocessor = CVDocumentPreprocessor()
     
     # Process single document
-    cv_path = "path/to/cv.pdf"
+    cv_path = "data/raw/cv/train"
     result = preprocessor.process_document(cv_path)
     print(f"Processed document: {result['filename']}")
     
     # Process directory
-    directory_path = "path/to/cv/directory"
+    directory_path = "data/processed/cv"
     results_df = preprocessor.process_directory(directory_path)
     
     # Save results
