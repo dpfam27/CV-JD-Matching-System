@@ -2,6 +2,15 @@
 import sys
 import os
 import logging
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
+import fitz
+from tensorflow.keras.models import load_model # type: ignore
+from tensorflow.keras.preprocessing.text import Tokenizer # type: ignore
+from tensorflow.keras.preprocessing.sequence import pad_sequences # type: ignore
+import json
+import numpy as np
+from pathlib import Path
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -13,17 +22,6 @@ print("Starting CV-JD Matching API")
 print(f"Python version: {sys.version}")
 print(f"Current working directory: {os.getcwd()}")
 print("="*50)
-
-# Rest of your imports
-from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.middleware.cors import CORSMiddleware
-import fitz
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-import json
-import numpy as np
-from pathlib import Path
 
 app = FastAPI()
 
@@ -67,7 +65,31 @@ except Exception as e:
     print(f"Error type: {type(e).__name__}")
     print(f"Error message: {str(e)}")
     print("="*50)
-    raise
+    raise 
+
+def preprocess_text(text, tokenizer, maxlen=100):
+    sequences = tokenizer.texts_to_sequences([text])
+    padded_sequences = pad_sequences(sequences, maxlen=maxlen)
+    return padded_sequences
+
+@app.post("/compare")
+async def compare_cv_jd(cv_file: UploadFile = File(...), jd_file: UploadFile = File(...)):
+    try:
+        # Read and preprocess CV
+        cv_text = fitz.open(stream=cv_file.file.read(), filetype="pdf").load_page(0).get_text("text")
+        cv_sequence = preprocess_text(cv_text, tokenizer)
+
+        # Read and preprocess JD
+        jd_text = fitz.open(stream=jd_file.file.read(), filetype="pdf").load_page(0).get_text("text")
+        jd_sequence = preprocess_text(jd_text, tokenizer)
+
+        # Predict similarity
+        similarity = model.predict([cv_sequence, jd_sequence])[0][0]
+
+        return {"similarity": similarity}
+    except Exception as e:
+        logger.error(f"Error processing files: {str(e)}")
+        return {"error": str(e)}
 
 @app.get("/api/health")
 async def health_check():
@@ -84,19 +106,33 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    print("Starting uvicorn server...")
-    uvicorn.run(
-        "app:app", 
-        host="0.0.0.0", 
-        port=8000, 
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+    
+    from tensorflow.keras.losses import MeanSquaredError  # Import the required loss function
 
-if __name__ == "__main__":
-    import uvicorn
-    print("\nStarting uvicorn server...")
-    print("API will be available at http://localhost:8000")
-    print("Documentation will be available at http://localhost:8000/docs")
+from tensorflow.keras.losses import MeanSquaredError
+from tensorflow.keras.saving import register_keras_serializable
+
+# Properly register 'mse' using the correct name
+@register_keras_serializable(package="keras.losses", name="mse")
+def custom_mse(y_true, y_pred):
+    return MeanSquaredError()(y_true, y_pred)
+
+try:
+    print("\nLoading model...")
+    model = load_model(MODEL_PATH, custom_objects={"mse": custom_mse})  # Pass 'custom_mse'
+    print("Model loaded successfully!")
+
+    print("\nLoading tokenizer...")
+    with open(TOKENIZER_PATH, 'r') as f:
+        tokenizer_config = json.load(f)
+        tokenizer = Tokenizer()
+        tokenizer.__dict__.update(json.loads(tokenizer_config))
+    print("Tokenizer loaded successfully!")
     print("="*50)
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+except Exception as e:
+    print(f"\nERROR loading model or tokenizer:")
+    print(f"Error type: {type(e).__name__}")
+    print(f"Error message: {str(e)}")
+    print("="*50)
+    raise

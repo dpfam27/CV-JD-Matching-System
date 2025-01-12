@@ -82,22 +82,28 @@ class PDFProcessor:
             return results
 
     def save_results(self, results: list):
-        """Save processing results"""
-        try:
-            if not results:
-                self.logger.warning("No results to save")
-                return
+        """Save processing results in both JSON and CSV formats"""
+    try:
+        if not results:
+            self.logger.warning("No results to save")
+            return
 
-            # Create DataFrame
-            df = pd.DataFrame(results)
-            
-            # Save as JSON
-            json_path = self.output_dir / 'processed_results.json'
-            df.to_json(json_path, orient='records', indent=2)
-            self.logger.info(f"Results saved to {json_path}")
+        # Create DataFrame
+        df = pd.DataFrame(results)
 
-        except Exception as e:
-            self.logger.error(f"Error saving results: {e}")
+        # Save as JSON
+        json_path = self.output_dir / 'processed_results.json'
+        df.to_json(json_path, orient='records', indent=2)
+        self.logger.info(f"Results saved to {json_path}")
+
+        # Save as CSV
+        csv_path = self.output_dir / 'cv_texts.csv'
+        df.to_csv(csv_path, index=False, columns=['filename', 'text'])  # Save 'filename' and 'text' columns
+        self.logger.info(f"Results saved to {csv_path}")
+
+    except Exception as e:
+        self.logger.error(f"Error saving results: {e}")
+
 
 def main():
     try:
