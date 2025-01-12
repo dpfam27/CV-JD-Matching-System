@@ -1,3 +1,4 @@
+# Save this as preprocess.py
 import os
 from pathlib import Path
 import fitz  # PyMuPDF
@@ -11,9 +12,9 @@ class PDFProcessor:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(__name__)
 
-        # Setup paths
-        current_file = Path(__file__)
-        self.base_dir = current_file.parent.parent.parent
+        # Setup paths - modified to use absolute paths
+        current_dir = Path(os.getcwd())  # Get current working directory
+        self.base_dir = current_dir  # This is your project root
         self.input_dir = self.base_dir / 'data' / 'raw' / 'cv' / 'test'
         self.output_dir = self.base_dir / 'data' / 'processed' / 'cv'
         
@@ -67,6 +68,7 @@ class PDFProcessor:
             # Get all PDF files
             pdf_files = list(self.input_dir.glob('*.pdf'))
             self.logger.info(f"Found {len(pdf_files)} PDF files")
+            self.logger.info(f"PDF files: {[f.name for f in pdf_files]}")  # Add this line to see file names
 
             # Process each PDF
             for pdf_path in pdf_files:
@@ -83,27 +85,26 @@ class PDFProcessor:
 
     def save_results(self, results: list):
         """Save processing results in both JSON and CSV formats"""
-    try:
-        if not results:
-            self.logger.warning("No results to save")
-            return
+        try:
+            if not results:
+                self.logger.warning("No results to save")
+                return
 
-        # Create DataFrame
-        df = pd.DataFrame(results)
+            # Create DataFrame
+            df = pd.DataFrame(results)
 
-        # Save as JSON
-        json_path = self.output_dir / 'processed_results.json'
-        df.to_json(json_path, orient='records', indent=2)
-        self.logger.info(f"Results saved to {json_path}")
+            # Save as JSON
+            json_path = self.output_dir / 'processed_results.json'
+            df.to_json(json_path, orient='records', indent=2)
+            self.logger.info(f"Results saved to {json_path}")
 
-        # Save as CSV
-        csv_path = self.output_dir / 'cv_texts.csv'
-        df.to_csv(csv_path, index=False, columns=['filename', 'text'])  # Save 'filename' and 'text' columns
-        self.logger.info(f"Results saved to {csv_path}")
+            # Save as CSV
+            csv_path = self.output_dir / 'cv_texts.csv'
+            df.to_csv(csv_path, index=False, columns=['filename', 'text'])
+            self.logger.info(f"Results saved to {csv_path}")
 
-    except Exception as e:
-        self.logger.error(f"Error saving results: {e}")
-
+        except Exception as e:
+            self.logger.error(f"Error saving results: {e}")
 
 def main():
     try:
