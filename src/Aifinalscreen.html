@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+
+        /* Header & Nav Styles */
+        header {
+            background-color: #fff;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2557a7;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .nav-links button {
+            margin: 0;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #2557a7, #1a3f7d);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Scanner Section */
+        .scanner {
+            max-width: 800px;
+            margin: -50px auto 0;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .upload-box {
+            padding: 2rem;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .upload-box:hover {
+            border-color: #2557a7;
+        }
+
+        /* Indeed Resume Form Styles */
+        .resume-form {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="month"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: #2557a7;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #2557a7;
+            border: 2px solid #2557a7;
+        }
+
+        /* Statistics Section */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            max-width: 800px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2557a7;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">PRO MATCHER</div>
+            <div class="nav-links">
+                <a href="#">Products</a>
+                <a href="#">Resources</a>
+                <a href="#">Pricing</a>
+                <a href="#"><button class="btn btn-secondary">Sign In</button></a>
+                <a href="#"><button class="btn btn-primary">Get Started</button></a>
+            </div>
+    </header>
+
+    <section class="hero">
+        <h1>Revolutionizing Recruitment with RNN Power </h1>
+        <p>Match your resume to the job description and get past applicant tracking systems</p>
+    </section>
+
+    <section class="scanner">
+        <div class="upload-section">
+            <div class="upload-box">
+                <h3>Paste Resume</h3>
+                <p>Drop your resume or paste text</p>
+            </div>
+            <div class="upload-box">
+                <h3>Paste Job Description</h3>
+                <p>Drop job description or paste text</p>
+            </div>
+        </div>
+        <button class="btn btn-primary">Scan Now</button>
+    </section>
+
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-number">4M+</div>
+            <div>Job Seekers</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">95%</div>
+            <div>Success Rate</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">50K+</div>
+            <div>Companies</div>
+        </div>
+    </div>
+
+    <div class="resume-form">
+        <div class="section">
+            <h2>Personal Information</h2>
+            <input type="text" placeholder="Full Name">
+            <input type="email" placeholder="Email">
+            <input type="tel" placeholder="Phone">
+            <input type="text" placeholder="Location">
+        </div>
+
+        <div class="section">
+            <h2>Education</h2>
+            <input type="text" placeholder="School Name">
+            <div class="form-row">
+                <input type="text" placeholder="Degree">
+                <input type="text" placeholder="Field of Study">
+            </div>
+            <div class="form-row">
+                <input type="month" placeholder="Start Date">
+                <input type="month" placeholder="End Date">
+            </div>
+            <button class="btn btn-secondary">+ Add Education</button>
+        </div>
+
+        <div class="section">
+            <h2>Work Experience</h2>
+            <input type="text" placeholder="Company Name">
+            <input type="text" placeholder="Job Title">
+            <div class="form-row">
+                <input type="month" placeholder="Start Date">
+                <input type="month" placeholder="End Date">
+            </div>
+            <textarea placeholder="Job Description"></textarea>
+            <button class="btn btn-secondary">+ Add Experience</button>
+        </div>
+
+        <button class="btn btn-primary">Save Resume</button>
+    </div>
+</body>
+</html>
