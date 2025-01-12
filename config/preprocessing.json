@@ -1,0 +1,13 @@
+# Create config directory
+mkdir config
+
+# Create preprocessing.json file
+@"
+{
+    "allowed_extensions": [".pdf", ".docx", ".doc"],
+    "raw_dir": "data/raw/cv/test",
+    "processed_dir": "data/processed/cv",
+    "min_words": 50,
+    "max_file_size_mb": 10
+}
+"@ | Out-File -FilePath config/preprocessing.json -Encoding UTF8
