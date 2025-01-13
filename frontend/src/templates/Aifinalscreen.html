@@ -1,205 +1,51 @@
-# backend/src/services/app.py
-
-import sys
-import os
-import logging
-from pathlib import Path
-import tensorflow as tf
-from tensorflow import keras
-import fitz
-import numpy as np
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from fastapi import FastAPI, UploadFile, File, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-import json
-
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-print("=" * 50)
-print("Starting CV-JD Matching API")
-print(f"Python version: {sys.version}")
-print(f"Current working directory: {os.getcwd()}")
-print("=" * 50)
-
-# Get the absolute path of the backend directory
-BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
-MODEL_PATH = BACKEND_DIR / "src" / "models" / "model.h5"
-TOKENIZER_PATH = BACKEND_DIR / "src" / "models" / "tokenizer.json"
-
-print("Checking file paths:")
-print(f"Model path: {MODEL_PATH}")
-print(f"Model exists: {MODEL_PATH.exists()}")
-print(f"Tokenizer path: {TOKENIZER_PATH}")
-print(f"Tokenizer exists: {TOKENIZER_PATH.exists()}")
-print("=" * 50)
-
-# Initialize FastAPI
-app = FastAPI(
-    title="CV-JD Matching API",
-    description="API for matching CVs with Job Descriptions using RNN",
-    version="1.0.0"
-)
-
-# Configure CORS - Allow all origins in development
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins in development
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Global variables for model and tokenizer
-model = None
-tokenizer = None
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize model and tokenizer on startup"""
-    global model, tokenizer
-    
-    try:
-        print("Loading model...")
-        model = keras.models.load_model(
-            MODEL_PATH,
-            custom_objects={
-                'cosine_similarity': tf.keras.metrics.CosineSimilarity(axis=1)
-            }
-        )
-        print("Model loaded successfully!")
-        
-        print("Loading tokenizer...")
-        with open(TOKENIZER_PATH, 'r', encoding='utf-8') as f:
-            tokenizer = keras.preprocessing.text.tokenizer_from_json(json.load(f))
-        print("Tokenizer loaded successfully!")
-        print("=" * 50)
-        
-    except Exception as e:
-        logger.error(f"Failed to initialize model/tokenizer: {str(e)}")
-        raise RuntimeError(f"Initialization failed: {str(e)}")
-
-def calculate_similarity(cv_embedding, jd_embedding):
-    """Calculate cosine similarity between CV and JD embeddings"""
-    try:
-        similarity = np.dot(cv_embedding, jd_embedding) / (
-            np.linalg.norm(cv_embedding) * np.linalg.norm(jd_embedding)
-        )
-        return float(similarity * 100)
-    except Exception as e:
-        logger.error(f"Error calculating similarity: {str(e)}")
-        raise
-
-def extract_text_from_pdf(content: bytes) -> str:
-    """Extract text content from PDF bytes"""
-    try:
-        pdf = fitz.open(stream=content, filetype="pdf")
-        text = ""
-        for page in pdf:
-            text += page.get_text()
-        return text.lower().strip()
-    except Exception as e:
-        logger.error(f"PDF extraction error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Could not process PDF file"
-        )
-
-@app.get("/")
-async def root():
-    """Root endpoint to check if API is running"""
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={"message": "CV-JD Matching API is running"}
-    )
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "status": "healthy",
-            "model_loaded": model is not None,
-            "tokenizer_loaded": tokenizer is not None
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jobscan & Resume Builder</title>
+    <title>Resume Builder</title>
+    <style>
+        {
+            margin: 0;
+            color: #2557a7;
         }
-    )
 
-@app.post("/api/match")
-async def match_documents(
-    cv_file: UploadFile = File(...),
-    jd_file: UploadFile = File(...)
-):
-    """Match CV and Job Description documents"""
-    try:
-        # Validate file types
-        if not cv_file.filename.lower().endswith('.pdf') or not jd_file.filename.lower().endswith('.pdf'):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Only PDF files are accepted"
-            )
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+        }
+        
+        .nav-links button {
+            margin: 0;
+        }
 
-        # Process PDF files
-        cv_content = await cv_file.read()
-        jd_content = await jd_file.read()
+        /* Hero Section */
+        .hero {
 
-        # Extract text
-        cv_text = extract_text_from_pdf(cv_content)
-        jd_text = extract_text_from_pdf(jd_content)
+<body>
+    <header>
+        <nav>
+            <div class="logo">Jobscan</div>
+            <div class="logo">PRO MATCHER</div>
+            <div class="nav-links">
+                <a href="#">Products</a>
+                <a href="#">Resources</a>
+                <a href="#">Pricing</a>
+                <a href="#"><button class="btn btn-secondary">Sign In</button></a>
+                <a href="#"><button class="btn btn-primary">Get Started</button></a>
+            </div>
+        </nav>
+    </header>
 
-        if not cv_text or not jd_text:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Could not extract text from PDF files"
-            )
+    <section class="hero">
+        <h1>Land More Interviews with Jobscan</h1>
+        <h1>Revolutionizing Recruitment with RNN Power </h1>
+        <p>Match your resume to the job description and get past applicant tracking systems</p>
+    </section>
 
-        # Tokenize and pad sequences
-        cv_seq = tokenizer.texts_to_sequences([cv_text])
-        jd_seq = tokenizer.texts_to_sequences([jd_text])
-
-        maxlen = 100  # Same as training
-        cv_pad = pad_sequences(cv_seq, maxlen=maxlen)
-        jd_pad = pad_sequences(jd_seq, maxlen=maxlen)
-
-        # Get embeddings and calculate similarity
-        cv_embedding = model.predict(cv_pad, verbose=0)[0]
-        jd_embedding = model.predict(jd_pad, verbose=0)[0]
-        match_score = calculate_similarity(cv_embedding, jd_embedding)
-
-        return JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content={
-                "status": "success",
-                "match_percentage": round(match_score, 2),
-                "cv_length": len(cv_text.split()),
-                "jd_length": len(jd_text.split())
-            }
-        )
-
-    except HTTPException as he:
-        raise he
-    except Exception as e:
-        logger.error(f"Matching error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
-
-def start():
-    """Function to start the server"""
-    import uvicorn
-    uvicorn.run(
-        "app:app",
-        host="127.0.0.1",  # Changed from 0.0.0.0 to 127.0.0.1
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
-
-if __name__ == "__main__":
-    start()
