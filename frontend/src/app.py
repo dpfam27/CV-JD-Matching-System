@@ -27,6 +27,22 @@ print(f"Tokenizer Path: {TOKENIZER_PATH}")
 print(f"Model exists: {MODEL_PATH.exists()}")
 print(f"Tokenizer exists: {TOKENIZER_PATH.exists()}")
 
+from flask import Flask, render_template, send_file
+app = Flask(__name__, 
+    template_folder=str(TEMPLATE_DIR)
+)
+
+# Add this configuration to disable caching
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
+
 # Initialize Flask app with correct template directory
 app = Flask(__name__, 
     template_folder=str(TEMPLATE_DIR)
