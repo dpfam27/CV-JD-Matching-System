@@ -1,10 +1,10 @@
-# Save this as preprocess.py
 import os
 from pathlib import Path
 import fitz  # PyMuPDF
 import pandas as pd
 import logging
 from datetime import datetime
+import re
 
 class PDFProcessor:
     def __init__(self):
@@ -12,13 +12,12 @@ class PDFProcessor:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(__name__)
 
-        # Setup paths - modified to use absolute paths
-        current_dir = Path(os.getcwd())  # Get current working directory
-        self.base_dir = current_dir  # This is your project root
+        # Setup paths using absolute paths for reliability
+        current_dir = Path(os.getcwd())
+        self.base_dir = current_dir
         self.input_dir = self.base_dir / 'data' / 'raw' / 'cv' / 'test'
         self.output_dir = self.base_dir / 'data' / 'processed' / 'cv'
         
-        # Create output directory if it doesn't exist
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         self.logger.info(f"Input directory: {self.input_dir}")
@@ -36,6 +35,34 @@ class PDFProcessor:
             self.logger.error(f"Error extracting text from {pdf_path}: {e}")
             return ""
 
+    def extract_section(self, text: str, section_keywords: list) -> str:
+        """Extract a specific section from text using keywords"""
+        text = text.lower()
+        section_text = ""
+        
+        # Find the start of the section
+        start_idx = -1
+        for keyword in section_keywords:
+            idx = text.find(keyword.lower())
+            if idx != -1 and (start_idx == -1 or idx < start_idx):
+                start_idx = idx
+
+        if start_idx == -1:
+            return ""
+
+        # Find the end of the section (next section heading or end of text)
+        section_endings = ['experience', 'education', 'skills', 'projects', 'achievements', 
+                         'certifications', 'languages', 'interests', 'references']
+        end_idx = len(text)
+        
+        for ending in section_endings:
+            idx = text.find(ending, start_idx + 1)
+            if idx != -1 and idx < end_idx:
+                end_idx = idx
+
+        section_text = text[start_idx:end_idx].strip()
+        return section_text
+
     def process_pdf(self, pdf_path: Path) -> dict:
         """Process a single PDF file"""
         try:
@@ -46,11 +73,17 @@ class PDFProcessor:
                 self.logger.warning(f"No text extracted from {pdf_path.name}")
                 return {}
 
+            # Extract sections
+            education = self.extract_section(text, ['education', 'academic background', 'qualifications'])
+            experience = self.extract_section(text, ['experience', 'work experience', 'employment'])
+            skills = self.extract_section(text, ['skills', 'technical skills', 'competencies'])
+
             # Create result dictionary
             result = {
                 "filename": pdf_path.name,
-                "text": text,
-                "word_count": len(text.split()),
+                "education": education,
+                "experience": experience,
+                "skills": skills,
                 "processed_date": datetime.now().isoformat(),
                 "file_size_kb": os.path.getsize(pdf_path) / 1024
             }
@@ -68,7 +101,6 @@ class PDFProcessor:
             # Get all PDF files
             pdf_files = list(self.input_dir.glob('*.pdf'))
             self.logger.info(f"Found {len(pdf_files)} PDF files")
-            self.logger.info(f"PDF files: {[f.name for f in pdf_files]}")  # Add this line to see file names
 
             # Process each PDF
             for pdf_path in pdf_files:
@@ -93,14 +125,14 @@ class PDFProcessor:
             # Create DataFrame
             df = pd.DataFrame(results)
 
-            # Save as JSON
+            # Save as JSON with sections
             json_path = self.output_dir / 'processed_results.json'
             df.to_json(json_path, orient='records', indent=2)
             self.logger.info(f"Results saved to {json_path}")
 
             # Save as CSV
-            csv_path = self.output_dir / 'cv_texts.csv'
-            df.to_csv(csv_path, index=False, columns=['filename', 'text'])
+            csv_path = self.output_dir / 'cv_sections.csv'
+            df.to_csv(csv_path, index=False)
             self.logger.info(f"Results saved to {csv_path}")
 
         except Exception as e:
