@@ -1,13 +1,13 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify, redirect, url_for, send_file
 from pathlib import Path
 import json
 import tensorflow as tf
 import os
 
 # Explicitly set up all paths
-FRONTEND_DIR = Path(__file__).resolve().parent  # src directory
-PROJECT_ROOT = FRONTEND_DIR.parent.parent       # CV-JD-Matching-System directory
-BACKEND_DIR = PROJECT_ROOT / 'backend' / 'src'  # backend/src directory
+FRONTEND_DIR = Path(__file__).resolve().parent  
+PROJECT_ROOT = FRONTEND_DIR.parent.parent       
+BACKEND_DIR = PROJECT_ROOT / 'backend' / 'src'  
 
 # Model paths
 MODEL_PATH = BACKEND_DIR / 'models' / 'model.h5'
@@ -27,29 +27,18 @@ print(f"Tokenizer Path: {TOKENIZER_PATH}")
 print(f"Model exists: {MODEL_PATH.exists()}")
 print(f"Tokenizer exists: {TOKENIZER_PATH.exists()}")
 
-from flask import Flask, render_template, send_file
-app = Flask(__name__, 
-    template_folder=str(TEMPLATE_DIR)
-)
+# Initialize Flask app
+app = Flask(__name__, template_folder=str(TEMPLATE_DIR))
 
-# Add this configuration to disable caching
+# Add configuration to disable caching
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 
-@app.after_request
-def add_header(response):
-    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '-1'
-    return response
+# Global variable to store current scan result
+current_scan_result = None
 
-# Initialize Flask app with correct template directory
-app = Flask(__name__, 
-    template_folder=str(TEMPLATE_DIR)
-)
-
-# Load ML models with better error handling
 def load_ml_models():
+    """Load and return ML models with error handling"""
     if not MODEL_PATH.exists():
         raise FileNotFoundError(f"Model file not found at: {MODEL_PATH}")
     if not TOKENIZER_PATH.exists():
@@ -70,29 +59,86 @@ def load_ml_models():
         print(f"\nError during model loading: {str(e)}")
         raise
 
-# Routes
+@app.after_request
+def add_header(response):
+    """Add headers to prevent caching"""
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '-1'
+    return response
+
 @app.route('/')
 def home():
+    """Render home page"""
+    return render_template('Aifinalscreen.html')
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    """Handle file uploads and text input"""
     try:
-        return render_template('Aifinalscreen.html')
+        resume = request.files['resume'] if 'resume' in request.files else None
+        job_desc = request.files['job_description'] if 'job_description' in request.files else None
+        
+        # Handle text input if files aren't provided
+        resume_text = request.form.get('resume_text', '')
+        job_desc_text = request.form.get('job_desc_text', '')
+        
+        # Process the inputs using your ML model
+        # For demo, we'll use mock results
+        match_score = 85
+        skills_match = {
+            "JavaScript": (3, 3),
+            "React": (2, 3),
+            "Node.js": (1, 2)
+        }
+        missing_keywords = ["TypeScript", "AWS"]
+        
+        # Store results in global variable for demo
+        global current_scan_result
+        current_scan_result = {
+            "match_score": match_score,
+            "skills_match": skills_match,
+            "missing_keywords": missing_keywords
+        }
+        
+        return redirect(url_for('result'))
     except Exception as e:
-        print(f"Error rendering home template: {str(e)}")
-        return f"Error: {str(e)}", 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/result')
 def result():
+    """Render result page"""
     try:
         return render_template('result.html')
     except Exception as e:
-        print(f"Error rendering result template: {str(e)}")
         return f"Error: {str(e)}", 500
 
 @app.route('/history')
 def history():
+    """Render history page with mock data"""
     try:
-        return render_template('History.html')
+        scan_history = [
+            {
+                "id": 1,
+                "score": 85,
+                "jobTitle": "Frontend Developer",
+                "company": "ABC Company",
+                "date": "2025-01-08",
+                "ats": "Workday",
+                "skills": ["JavaScript", "React", "Node.js"]
+            },
+            {
+                "id": 2,
+                "score": 65,
+                "jobTitle": "Full Stack Developer",
+                "company": "XYZ Corp",
+                "date": "2025-01-07",
+                "ats": "Greenhouse",
+                "skills": ["Python", "Django", "PostgreSQL"]
+            }
+        ]
+        return render_template('History.html', scan_history=scan_history)
     except Exception as e:
-        print(f"Error rendering history template: {str(e)}")
         return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':

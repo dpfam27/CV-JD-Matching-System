@@ -185,6 +185,88 @@
         }
     </style>
 </head>
+// Add this script to Aifinalscreen.html before </body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadBoxes = document.querySelectorAll('.upload-box');
+    const scanButton = document.querySelector('.btn-primary');
+    let resumeContent = '';
+    let jobDescContent = '';
+
+    uploadBoxes.forEach((box, index) => {
+        box.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            box.style.borderColor = '#2557a7';
+        });
+
+        box.addEventListener('dragleave', () => {
+            box.style.borderColor = '#ddd';
+        });
+
+        box.addEventListener('drop', (e) => {
+            e.preventDefault();
+            box.style.borderColor = '#ddd';
+            
+            const file = e.dataTransfer.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = (event) => {
+                if (index === 0) {
+                    resumeContent = event.target.result;
+                    box.innerHTML = '<h3>Resume Uploaded</h3><p>' + file.name + '</p>';
+                } else {
+                    jobDescContent = event.target.result;
+                    box.innerHTML = '<h3>Job Description Uploaded</h3><p>' + file.name + '</p>';
+                }
+            };
+            
+            reader.readAsText(file);
+        });
+
+        // Add click to paste functionality
+        box.addEventListener('click', () => {
+            navigator.clipboard.readText()
+                .then(text => {
+                    if (index === 0) {
+                        resumeContent = text;
+                        box.innerHTML = '<h3>Resume Pasted</h3><p>Content from clipboard</p>';
+                    } else {
+                        jobDescContent = text;
+                        box.innerHTML = '<h3>Job Description Pasted</h3><p>Content from clipboard</p>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to read clipboard:', err);
+                });
+        });
+    });
+
+    scanButton.addEventListener('click', () => {
+        if (!resumeContent || !jobDescContent) {
+            alert('Please provide both resume and job description');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('resume_text', resumeContent);
+        formData.append('job_desc_text', jobDescContent);
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during scanning');
+        });
+    });
+});
+</script>
 <body>
     <header>
         <nav>
