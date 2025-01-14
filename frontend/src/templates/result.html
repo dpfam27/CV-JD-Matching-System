@@ -291,52 +291,40 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="container">
         <!-- Match Score -->
         <div class="match-score">
-            <div class="score-circle">85%</div>
-            <h2>Great Match!</h2>
-            <p>Your resume matches 85% of the job requirements</p>
+            <div class="score-circle">{{ match_score }}%</div>
+            <h2>{% if match_score >= 80 %}Great Match!{% elif match_score >= 60 %}Good Match{% else %}Needs Improvement{% endif %}</h2>
+            <p>Your resume matches {{ match_score }}% of the job requirements</p>
         </div>
 
-        <div class="results-grid">
-            <!-- Analysis Section -->
-            <div class="analysis">
-                <h2>Detailed Analysis</h2>
-                
-                <!-- Hard Skills -->
-                <h3>Hard Skills Match</h3>
-                <div class="skills-match">
-                    <div class="skill-name">JavaScript</div>
-                    <div class="skill-count">3/3</div>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress" style="width: 100%"></div>
-                </div>
-
-                <div class="skills-match">
-                    <div class="skill-name">React</div>
-                    <div class="skill-count">2/3</div>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress" style="width: 66%"></div>
-                </div>
-
-                <div class="skills-match">
-                    <div class="skill-name">Node.js</div>
-                    <div class="skill-count">1/2</div>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress" style="width: 50%"></div>
-                </div>
-
-                <!-- Keyword Match -->
-                <h3>Keyword Match</h3>
-                <div style="margin-bottom: 1rem;">
-                    <span class="label label-blue">agile</span>
-                    <span class="label label-blue">frontend</span>
-                    <span class="label label-green">web development</span>
-                    <span class="label label-yellow">missing: TypeScript</span>
-                    <span class="label label-yellow">missing: AWS</span>
-                </div>
+        <!-- In the analysis section -->
+        <div class="analysis">
+            <h2>Detailed Analysis</h2>
+            
+            <!-- Hard Skills -->
+            <h3>Hard Skills Match</h3>
+            {% for skill, (resume_count, jd_count) in skills_match.items() %}
+            <div class="skills-match">
+                <div class="skill-name">{{ skill|title }}</div>
+                <div class="skill-count">{{ resume_count }}/{{ jd_count }}</div>
             </div>
+            <div class="progress-bar">
+                <div class="progress" style="width: {{ (resume_count / jd_count * 100) if jd_count > 0 else 0 }}%"></div>
+            </div>
+            {% endfor %}
+
+            <!-- Keyword Match -->
+            <h3>Keyword Match</h3>
+            <div style="margin-bottom: 1rem;">
+                {% for skill, (resume_count, jd_count) in skills_match.items() %}
+                    {% if resume_count >= jd_count %}
+                        <span class="label label-blue">{{ skill }}</span>
+                    {% endif %}
+                {% endfor %}
+                {% for keyword in missing_keywords %}
+                    <span class="label label-yellow">missing: {{ keyword }}</span>
+                {% endfor %}
+            </div>
+        </div>
 
             <!-- Suggestions -->
             <div class="suggestions">
