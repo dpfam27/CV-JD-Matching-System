@@ -156,20 +156,41 @@ def upload():
 
 @app.route('/result')
 def result():
-    """Render result page with actual scan results"""
+    """Render result page"""
     try:
-        if 'scan_result' not in session:
-            return redirect(url_for('home'))
-            
-        scan_result = session['scan_result']
-        return render_template(
-            'result.html',
-            match_score=scan_result['match_score'],
-            skills_match=scan_result['skills_match'],
-            missing_keywords=scan_result['missing_keywords']
-        )
+        return render_template('result.html')
     except Exception as e:
         return f"Error: {str(e)}", 500
+
+@app.route('/process_scan', methods=['POST'])
+def process_scan():
+    """Process the scan data and return results"""
+    try:
+        data = request.get_json()
+        resume_text = data.get('resume_text', '')
+        job_desc_text = data.get('job_desc_text', '')
+        
+        if not resume_text or not job_desc_text:
+            return jsonify({"error": "Both resume and job description are required"}), 400
+            
+        # Process the inputs using your ML model
+        # For demo, we'll use mock results
+        match_score = 85
+        skills_match = {
+            "JavaScript": [3, 3],
+            "React": [2, 3],
+            "Node.js": [1, 2]
+        }
+        missing_keywords = ["TypeScript", "AWS"]
+        
+        return jsonify({
+            "match_score": match_score,
+            "skills_match": skills_match,
+            "missing_keywords": missing_keywords
+        })
+    except Exception as e:
+        print(f"Error in process_scan: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/history')
 def history():

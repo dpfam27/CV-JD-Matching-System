@@ -272,15 +272,31 @@ document.addEventListener('DOMContentLoaded', function() {
     <input type="hidden" name="job_desc_text" id="jobDescText">
 </form>
 
+<!-- Replace the scanner section in Aifinalscreen.html -->
+<section class="scanner">
+    <div class="upload-section">
+        <div class="upload-box" id="resumeBox">
+            <h3>Paste Resume</h3>
+            <p>Drop your resume or paste text</p>
+        </div>
+        <div class="upload-box" id="jobBox">
+            <h3>Paste Job Description</h3>
+            <p>Drop job description or paste text</p>
+        </div>
+    </div>
+    <button class="btn btn-primary" id="scanButton">Scan Now</button>
+</section>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const uploadBoxes = document.querySelectorAll('.upload-box');
-    const scanButton = document.querySelector('.scanner .btn-primary');
+    const resumeBox = document.getElementById('resumeBox');
+    const jobBox = document.getElementById('jobBox');
+    const scanButton = document.getElementById('scanButton');
     let resumeContent = '';
     let jobDescContent = '';
 
-    uploadBoxes.forEach((box, index) => {
-        // Handle drag and drop
+    // Handle drag and drop for both boxes
+    [resumeBox, jobBox].forEach((box, index) => {
         box.addEventListener('dragover', (e) => {
             e.preventDefault();
             box.style.borderColor = '#2557a7';
@@ -324,24 +340,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(err => {
                     console.error('Failed to read clipboard:', err);
-                    alert('Please allow clipboard access or paste your content manually');
                 });
         });
     });
 
     // Handle scan button click
     scanButton.addEventListener('click', () => {
-        if (!resumeContent && !jobDescContent) {
+        if (!resumeContent || !jobDescContent) {
             alert('Please provide both resume and job description');
             return;
         }
 
-        // Set form values
-        document.getElementById('resumeText').value = resumeContent;
-        document.getElementById('jobDescText').value = jobDescContent;
-
-        // Submit form
-        document.getElementById('scanForm').submit();
+        // Store the content in sessionStorage before navigating
+        sessionStorage.setItem('resume_text', resumeContent);
+        sessionStorage.setItem('job_desc_text', jobDescContent);
+        
+        // Navigate directly to result page
+        window.location.href = '/result';
     });
 });
 </script>

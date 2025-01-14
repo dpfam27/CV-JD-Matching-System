@@ -391,5 +391,78 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if we have data to process
+        const resumeText = sessionStorage.getItem('resume_text');
+        const jobDescText = sessionStorage.getItem('job_desc_text');
+        
+        if (resumeText && jobDescText) {
+            // Clear sessionStorage
+            sessionStorage.removeItem('resume_text');
+            sessionStorage.removeItem('job_desc_text');
+            
+            // Process the data
+            fetch('/process_scan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    resume_text: resumeText,
+                    job_desc_text: jobDescText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Update match score
+                document.querySelector('.score-circle').textContent = data.match_score + '%';
+                
+                // Update skills match section
+                const skillsHTML = Object.entries(data.skills_match).map(([skill, counts]) => {
+                    const [resume_count, jd_count] = counts;
+                    const percentage = (resume_count / jd_count * 100);
+                    return `
+                        <div class="skills-match">
+                            <div class="skill-name">${skill}</div>
+                            <div class="skill-count">${resume_count}/${jd_count}</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${percentage}%"></div>
+                        </div>`;
+                }).join('');
+                
+                // Update keywords section
+                const keywordsHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        ${Object.entries(data.skills_match)
+                            .filter(([_, counts]) => counts[0] >= counts[1])
+                            .map(([skill, _]) => `<span class="label label-blue">${skill}</span>`)
+                            .join(' ')}
+                        ${data.missing_keywords
+                            .map(keyword => `<span class="label label-yellow">missing: ${keyword}</span>`)
+                            .join(' ')}
+                    </div>`;
+                
+                // Update the UI
+                const analysisSection = document.querySelector('.analysis');
+                analysisSection.innerHTML = `
+                    <h2>Detailed Analysis</h2>
+                    <h3>Hard Skills Match</h3>
+                    ${skillsHTML}
+                    <h3>Keyword Match</h3>
+                    ${keywordsHTML}`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing your scan');
+            });
+        }
+    });
+</script>
 </body>
 </html>
