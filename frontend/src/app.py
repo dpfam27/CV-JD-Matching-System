@@ -158,7 +158,13 @@ def upload():
 def result():
     """Render result page"""
     try:
-        return render_template('result.html')
+        # Initialize with default values
+        initial_data = {
+            "match_score": 0,
+            "skills_match": {},
+            "missing_keywords": []
+        }
+        return render_template('result.html', **initial_data)
     except Exception as e:
         return f"Error: {str(e)}", 500
 

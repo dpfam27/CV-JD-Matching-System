@@ -27,6 +27,7 @@
             font-size: 24px;
             font-weight: bold;
             color: #2557a7;
+            cursor: pointer;
         }
 
         body {
@@ -39,6 +40,25 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #2557a7;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #2557a7;
+            border: 2px solid #2557a7;
         }
 
         /* Match Score Section */
@@ -70,6 +90,7 @@
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 2rem;
+            margin-bottom: 2rem;
         }
 
         /* Analysis Section */
@@ -143,6 +164,7 @@
             border-radius: 4px;
             font-size: 0.875rem;
             margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
         }
 
         .label-blue {
@@ -150,17 +172,17 @@
             color: #1565c0;
         }
 
-        .label-green {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
         .label-yellow {
             background: #fff3e0;
             color: #f57c00;
         }
+
+        /* Course Recommendations */
         .course-recommendations {
-            margin-top: 2rem;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .courses-grid {
@@ -196,19 +218,6 @@
             color: #2557a7;
         }
 
-        .course-card h3 {
-            color: #333;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .course-card p {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            flex-grow: 1;
-        }
-
         .course-meta {
             display: flex;
             justify-content: space-between;
@@ -231,238 +240,189 @@
         .course-link:hover {
             background: #1d4589;
         }
-
-        .duration, .platform {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
     </style>
 </head>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add navigation functionality
-    const logo = document.querySelector('.logo');
-    logo.addEventListener('click', () => {
-        window.location.href = '/';
-    });
-
-    // Add history button to header
-    const nav = document.querySelector('nav');
-    const historyButton = document.createElement('button');
-    historyButton.className = 'btn btn-secondary';
-    historyButton.textContent = 'View History';
-    historyButton.style.marginLeft = '20px';
-    historyButton.addEventListener('click', () => {
-        window.location.href = '/history';
-    });
-    nav.appendChild(historyButton);
-
-    // Add save to history functionality
-    const saveButton = document.createElement('button');
-    saveButton.className = 'btn btn-primary';
-    saveButton.textContent = 'Save to History';
-    saveButton.style.marginTop = '20px';
-    document.querySelector('.container').appendChild(saveButton);
-
-    saveButton.addEventListener('click', () => {
-        // In a real app, this would save to a database
-        alert('Scan saved to history!');
-        window.location.href = '/history';
-    });
-
-    // Add course enrollment functionality
-    const courseLinks = document.querySelectorAll('.course-link');
-    courseLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Course enrollment will be handled by the learning platform');
-        });
-    });
-});
-</script>
 <body>
     <header>
         <nav>
             <div class="logo">PRO MATCHER</div>
+            <button class="btn btn-secondary" id="historyButton">View History</button>
         </nav>
     </header>
 
     <div class="container">
         <!-- Match Score -->
         <div class="match-score">
-            <div class="score-circle">{{ match_score }}%</div>
-            <h2>{% if match_score >= 80 %}Great Match!{% elif match_score >= 60 %}Good Match{% else %}Needs Improvement{% endif %}</h2>
-            <p>Your resume matches {{ match_score }}% of the job requirements</p>
+            <div class="score-circle">0%</div>
+            <h2>Awaiting Analysis</h2>
+            <p>Loading your results...</p>
         </div>
 
-        <!-- In the analysis section -->
-        <div class="analysis">
-            <h2>Detailed Analysis</h2>
-            
-            <!-- Hard Skills -->
-            <h3>Hard Skills Match</h3>
-            {% for skill, (resume_count, jd_count) in skills_match.items() %}
-            <div class="skills-match">
-                <div class="skill-name">{{ skill|title }}</div>
-                <div class="skill-count">{{ resume_count }}/{{ jd_count }}</div>
+        <div class="results-grid">
+            <!-- Analysis Section -->
+            <div class="analysis">
+                <h2>Detailed Analysis</h2>
+                <div id="analysis-content">
+                    <h3>Hard Skills Match</h3>
+                    <p>Processing your resume and job description...</p>
+                </div>
             </div>
-            <div class="progress-bar">
-                <div class="progress" style="width: {{ (resume_count / jd_count * 100) if jd_count > 0 else 0 }}%"></div>
-            </div>
-            {% endfor %}
 
-            <!-- Keyword Match -->
-            <h3>Keyword Match</h3>
-            <div style="margin-bottom: 1rem;">
-                {% for skill, (resume_count, jd_count) in skills_match.items() %}
-                    {% if resume_count >= jd_count %}
-                        <span class="label label-blue">{{ skill }}</span>
-                    {% endif %}
-                {% endfor %}
-                {% for keyword in missing_keywords %}
-                    <span class="label label-yellow">missing: {{ keyword }}</span>
-                {% endfor %}
-            </div>
-        </div>
-
-            <!-- Suggestions -->
+            <!-- Suggestions Section -->
             <div class="suggestions">
                 <h2>Improvement Suggestions</h2>
-                <div class="suggestion-item">
-                    <h3>Add Missing Keywords</h3>
-                    <p>Include TypeScript and AWS in your skills section</p>
-                </div>
-                <div class="suggestion-item">
-                    <h3>Quantify Achievements</h3>
-                    <p>Add metrics to your React development experience</p>
-                </div>
-                <div class="suggestion-item">
-                    <h3>Technical Skills</h3>
-                    <p>Highlight more Node.js projects and experience</p>
+                <div id="suggestions-content">
+                    <div class="suggestion-item">
+                        <h3>Analyzing</h3>
+                        <p>Preparing personalized suggestions...</p>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Course Recommendations -->
+        <div class="course-recommendations">
+            <h2>Course Recommendations</h2>
+            <div class="courses-grid" id="courses-content">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="saveButton" style="margin-top: 2rem; width: 200px;">Save to History</button>
     </div>
-</div>
 
-<!-- Course Recommendations -->
-<div class="course-recommendations">
-    <h2>Course Recommendations</h2>
-    <div class="courses-grid">
-        <div class="course-card">
-            <div class="course-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-4V6"></path><circle cx="12" cy="12" r="10"></circle></svg>
-            </div>
-            <h3>TypeScript Basic to High-level</h3>
-            <p>Master TypeScript to improve your Frontend development skills</p>
-            <div class="course-meta">
-                <span class="duration">40 hours</span>
-                <span class="platform">Udemy</span>
-            </div>
-            <a href="#" class="course-link">View</a>
-        </div>
-
-        <div class="course-card">
-            <div class="course-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
-            </div>
-            <h3>AWS for Developer</h3>
-            <p>Learn how to deploy and manage applications on AWS Cloud</p>
-            <div class="course-meta">
-                <span class="duration">50 hours</span>
-                <span class="platform">Coursera</span>
-            </div>
-            <a href="#" class="course-link">View</a>
-        </div>
-
-        <div class="course-card">
-            <div class="course-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            </div>
-            <h3>Node.js Advanced</h3>
-            <p>Develop Node.js applications with modern design patterns</p>
-            <div class="course-meta">
-                <span class="duration">35 hours</span>
-                <span class="platform">LinkedIn Learning</span>
-            </div>
-            <a href="#" class="course-link">View</a>
-        </div>
-    </div>
-</div>
-</div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check if we have data to process
-        const resumeText = sessionStorage.getItem('resume_text');
-        const jobDescText = sessionStorage.getItem('job_desc_text');
-        
-        if (resumeText && jobDescText) {
-            // Clear sessionStorage
-            sessionStorage.removeItem('resume_text');
-            sessionStorage.removeItem('job_desc_text');
-            
-            // Process the data
-            fetch('/process_scan', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    resume_text: resumeText,
-                    job_desc_text: jobDescText
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                
-                // Update match score
-                document.querySelector('.score-circle').textContent = data.match_score + '%';
-                
-                // Update skills match section
-                const skillsHTML = Object.entries(data.skills_match).map(([skill, counts]) => {
-                    const [resume_count, jd_count] = counts;
-                    const percentage = (resume_count / jd_count * 100);
-                    return `
-                        <div class="skills-match">
-                            <div class="skill-name">${skill}</div>
-                            <div class="skill-count">${resume_count}/${jd_count}</div>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: ${percentage}%"></div>
-                        </div>`;
-                }).join('');
-                
-                // Update keywords section
-                const keywordsHTML = `
-                    <div style="margin-bottom: 1rem;">
-                        ${Object.entries(data.skills_match)
-                            .filter(([_, counts]) => counts[0] >= counts[1])
-                            .map(([skill, _]) => `<span class="label label-blue">${skill}</span>`)
-                            .join(' ')}
-                        ${data.missing_keywords
-                            .map(keyword => `<span class="label label-yellow">missing: ${keyword}</span>`)
-                            .join(' ')}
-                    </div>`;
-                
-                // Update the UI
-                const analysisSection = document.querySelector('.analysis');
-                analysisSection.innerHTML = `
-                    <h2>Detailed Analysis</h2>
-                    <h3>Hard Skills Match</h3>
-                    ${skillsHTML}
-                    <h3>Keyword Match</h3>
-                    ${keywordsHTML}`;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while processing your scan');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navigation functionality
+            document.querySelector('.logo').addEventListener('click', () => {
+                window.location.href = '/';
             });
-        }
-    });
-</script>
+
+            document.getElementById('historyButton').addEventListener('click', () => {
+                window.location.href = '/history';
+            });
+
+            document.getElementById('saveButton').addEventListener('click', () => {
+                alert('Scan saved to history!');
+                window.location.href = '/history';
+            });
+
+            // Process scan data if available
+            const resumeText = sessionStorage.getItem('resume_text');
+            const jobDescText = sessionStorage.getItem('job_desc_text');
+            
+            if (resumeText && jobDescText) {
+                // Clear sessionStorage
+                sessionStorage.removeItem('resume_text');
+                sessionStorage.removeItem('job_desc_text');
+                
+                // Show loading state
+                document.querySelector('.score-circle').textContent = 'Loading...';
+                
+                // Process the data
+                fetch('/process_scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        resume_text: resumeText,
+                        job_desc_text: jobDescText
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    // Update match score
+                    const scoreCircle = document.querySelector('.score-circle');
+                    const scoreTitle = scoreCircle.nextElementSibling;
+                    const scoreDesc = scoreTitle.nextElementSibling;
+                    
+                    scoreCircle.textContent = data.match_score + '%';
+                    
+                    if (data.match_score >= 80) {
+                        scoreTitle.textContent = 'Great Match!';
+                    } else if (data.match_score >= 60) {
+                        scoreTitle.textContent = 'Good Match';
+                    } else {
+                        scoreTitle.textContent = 'Needs Improvement';
+                    }
+                    
+                    scoreDesc.textContent = `Your resume matches ${data.match_score}% of the job requirements`;
+
+                    // Update analysis content
+                    const analysisHTML = `
+                        <h3>Hard Skills Match</h3>
+                        ${Object.entries(data.skills_match).map(([skill, counts]) => `
+                            <div class="skills-match">
+                                <div class="skill-name">${skill}</div>
+                                <div class="skill-count">${counts[0]}/${counts[1]}</div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: ${(counts[0] / counts[1] * 100)}%"></div>
+                            </div>
+                        `).join('')}
+                        
+                        <h3>Keyword Match</h3>
+                        <div style="margin-bottom: 1rem;">
+                            ${Object.entries(data.skills_match)
+                                .filter(([_, counts]) => counts[0] >= counts[1])
+                                .map(([skill, _]) => `<span class="label label-blue">${skill}</span>`)
+                                .join('')}
+                            ${data.missing_keywords
+                                .map(keyword => `<span class="label label-yellow">missing: ${keyword}</span>`)
+                                .join('')}
+                        </div>
+                    `;
+                    document.getElementById('analysis-content').innerHTML = analysisHTML;
+
+                    // Update suggestions
+                    const suggestionsHTML = `
+                        ${data.missing_keywords.length > 0 ? `
+                            <div class="suggestion-item">
+                                <h3>Add Missing Keywords</h3>
+                                <p>Consider adding these missing keywords to your resume: ${data.missing_keywords.join(', ')}</p>
+                            </div>
+                        ` : ''}
+                        <div class="suggestion-item">
+                            <h3>Quantify Achievements</h3>
+                            <p>Add metrics to your development experience</p>
+                        </div>
+                        <div class="suggestion-item">
+                            <h3>Technical Skills</h3>
+                            <p>Highlight more relevant projects and experience</p>
+                        </div>
+                    `;
+                    document.getElementById('suggestions-content').innerHTML = suggestionsHTML;
+
+                    // Update course recommendations
+                    const coursesHTML = data.missing_keywords.map(keyword => `
+                        <div class="course-card">
+                            <div class="course-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                            </div>
+                            <h3>${keyword} Fundamentals</h3>
+                            <p>Master ${keyword} to improve your development skills</p>
+                            <div class="course-meta">
+                                <span class="duration">40 hours</span>
+                                <span class="platform">Various Platforms</span>
+                            </div>
+                            <a href="#" class="course-link">View Courses</a>
+                        </div>
+                    `).join('');
+                    document.getElementById('courses-content').innerHTML = coursesHTML;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your scan');
+                    // Show error state in UI
+                    document.querySelector('.score-circle').textContent = 'Error';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
