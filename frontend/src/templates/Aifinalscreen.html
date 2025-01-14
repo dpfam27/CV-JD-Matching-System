@@ -34,6 +34,7 @@
             font-size: 24px;
             font-weight: bold;
             color: #2557a7;
+            cursor: pointer;
         }
 
         .nav-links {
@@ -45,10 +46,6 @@
         .nav-links a {
             text-decoration: none;
             color: #333;
-        }
-        
-        .nav-links button {
-            margin: 0;
         }
 
         /* Hero Section */
@@ -92,56 +89,34 @@
             border-radius: 8px;
             text-align: center;
             cursor: pointer;
+            background: white;
+            min-height: 200px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .upload-box:hover {
             border-color: #2557a7;
         }
 
-        /* Indeed Resume Form Styles */
-        .resume-form {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .section {
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="month"] {
+        .upload-box textarea {
             width: 100%;
+            height: 150px;
             padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            margin-top: 10px;
+            border: none;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            display: none;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 100px;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .upload-box textarea:focus {
+            outline: none;
         }
 
         /* Button Styles */
@@ -157,6 +132,10 @@
             background-color: #2557a7;
             color: white;
             width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4589;
         }
 
         .btn-secondary {
@@ -185,182 +164,6 @@
         }
     </style>
 </head>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const uploadBoxes = document.querySelectorAll('.upload-box');
-    const scanButton = document.querySelector('.btn-primary');
-    let resumeContent = '';
-    let jobDescContent = '';
-
-    uploadBoxes.forEach((box, index) => {
-        box.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            box.style.borderColor = '#2557a7';
-        });
-
-        box.addEventListener('dragleave', () => {
-            box.style.borderColor = '#ddd';
-        });
-
-        box.addEventListener('drop', (e) => {
-            e.preventDefault();
-            box.style.borderColor = '#ddd';
-            
-            const file = e.dataTransfer.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = (event) => {
-                if (index === 0) {
-                    resumeContent = event.target.result;
-                    box.innerHTML = '<h3>Resume Uploaded</h3><p>' + file.name + '</p>';
-                } else {
-                    jobDescContent = event.target.result;
-                    box.innerHTML = '<h3>Job Description Uploaded</h3><p>' + file.name + '</p>';
-                }
-            };
-            
-            reader.readAsText(file);
-        });
-
-        // Add click to paste functionality
-        box.addEventListener('click', () => {
-            navigator.clipboard.readText()
-                .then(text => {
-                    if (index === 0) {
-                        resumeContent = text;
-                        box.innerHTML = '<h3>Resume Pasted</h3><p>Content from clipboard</p>';
-                    } else {
-                        jobDescContent = text;
-                        box.innerHTML = '<h3>Job Description Pasted</h3><p>Content from clipboard</p>';
-                    }
-                })
-                .catch(err => {
-                    console.error('Failed to read clipboard:', err);
-                });
-        });
-    });
-
-    scanButton.addEventListener('click', () => {
-        if (!resumeContent || !jobDescContent) {
-            alert('Please provide both resume and job description');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('resume_text', resumeContent);
-        formData.append('job_desc_text', jobDescContent);
-
-        fetch('/upload', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.redirected) {
-                window.location.href = response.url;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred during scanning');
-        });
-    });
-});
-</script>
-
-<form id="scanForm" action="/upload" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="resume_text" id="resumeText">
-    <input type="hidden" name="job_desc_text" id="jobDescText">
-</form>
-
-<!-- Replace the scanner section in Aifinalscreen.html -->
-<section class="scanner">
-    <div class="upload-section">
-        <div class="upload-box" id="resumeBox">
-            <h3>Paste Resume</h3>
-            <p>Drop your resume or paste text</p>
-        </div>
-        <div class="upload-box" id="jobBox">
-            <h3>Paste Job Description</h3>
-            <p>Drop job description or paste text</p>
-        </div>
-    </div>
-    <button class="btn btn-primary" id="scanButton">Scan Now</button>
-</section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const resumeBox = document.getElementById('resumeBox');
-    const jobBox = document.getElementById('jobBox');
-    const scanButton = document.getElementById('scanButton');
-    let resumeContent = '';
-    let jobDescContent = '';
-
-    // Handle drag and drop for both boxes
-    [resumeBox, jobBox].forEach((box, index) => {
-        box.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            box.style.borderColor = '#2557a7';
-        });
-
-        box.addEventListener('dragleave', () => {
-            box.style.borderColor = '#ddd';
-        });
-
-        box.addEventListener('drop', (e) => {
-            e.preventDefault();
-            box.style.borderColor = '#ddd';
-            
-            const file = e.dataTransfer.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = (event) => {
-                if (index === 0) {
-                    resumeContent = event.target.result;
-                    box.innerHTML = '<h3>Resume Uploaded</h3><p>' + file.name + '</p>';
-                } else {
-                    jobDescContent = event.target.result;
-                    box.innerHTML = '<h3>Job Description Uploaded</h3><p>' + file.name + '</p>';
-                }
-            };
-            
-            reader.readAsText(file);
-        });
-
-        // Handle click to paste
-        box.addEventListener('click', () => {
-            navigator.clipboard.readText()
-                .then(text => {
-                    if (index === 0) {
-                        resumeContent = text;
-                        box.innerHTML = '<h3>Resume Pasted</h3><p>Content from clipboard</p>';
-                    } else {
-                        jobDescContent = text;
-                        box.innerHTML = '<h3>Job Description Pasted</h3><p>Content from clipboard</p>';
-                    }
-                })
-                .catch(err => {
-                    console.error('Failed to read clipboard:', err);
-                });
-        });
-    });
-
-    // Handle scan button click
-    scanButton.addEventListener('click', () => {
-        if (!resumeContent || !jobDescContent) {
-            alert('Please provide both resume and job description');
-            return;
-        }
-
-        // Store the content in sessionStorage before navigating
-        sessionStorage.setItem('resume_text', resumeContent);
-        sessionStorage.setItem('job_desc_text', jobDescContent);
-        
-        // Navigate directly to result page
-        window.location.href = '/result';
-    });
-});
-</script>
-
 <body>
     <header>
         <nav>
@@ -372,25 +175,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a href="#"><button class="btn btn-secondary">Sign In</button></a>
                 <a href="#"><button class="btn btn-primary">Get Started</button></a>
             </div>
+        </nav>
     </header>
 
     <section class="hero">
-        <h1>Revolutionizing Recruitment with RNN Power </h1>
+        <h1>Revolutionizing Recruitment with RNN Power</h1>
         <p>Match your resume to the job description and get past applicant tracking systems</p>
     </section>
 
     <section class="scanner">
         <div class="upload-section">
-            <div class="upload-box">
+            <div class="upload-box" id="resumeBox">
                 <h3>Paste Resume</h3>
                 <p>Drop your resume or paste text</p>
+                <textarea id="resumeText"></textarea>
             </div>
-            <div class="upload-box">
+            <div class="upload-box" id="jobBox">
                 <h3>Paste Job Description</h3>
                 <p>Drop job description or paste text</p>
+                <textarea id="jobText"></textarea>
             </div>
         </div>
-        <button class="btn btn-primary">Scan Now</button>
+        <button class="btn btn-primary" id="scanButton">Scan Now</button>
     </section>
 
     <div class="stats">
@@ -408,42 +214,87 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 
-    <div class="resume-form">
-        <div class="section">
-            <h2>Personal Information</h2>
-            <input type="text" placeholder="Full Name">
-            <input type="email" placeholder="Email">
-            <input type="tel" placeholder="Phone">
-            <input type="text" placeholder="Location">
-        </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const resumeBox = document.getElementById('resumeBox');
+        const jobBox = document.getElementById('jobBox');
+        const resumeText = document.getElementById('resumeText');
+        const jobText = document.getElementById('jobText');
+        const scanButton = document.getElementById('scanButton');
 
-        <div class="section">
-            <h2>Education</h2>
-            <input type="text" placeholder="School Name">
-            <div class="form-row">
-                <input type="text" placeholder="Degree">
-                <input type="text" placeholder="Field of Study">
-            </div>
-            <div class="form-row">
-                <input type="month" placeholder="Start Date">
-                <input type="month" placeholder="End Date">
-            </div>
-            <button class="btn btn-secondary">+ Add Education</button>
-        </div>
+        function showTextArea(box, textArea) {
+            const heading = box.querySelector('h3');
+            const paragraph = box.querySelector('p');
+            
+            if (heading) heading.style.display = 'none';
+            if (paragraph) paragraph.style.display = 'none';
+            textArea.style.display = 'block';
+            textArea.focus();
+        }
 
-        <div class="section">
-            <h2>Work Experience</h2>
-            <input type="text" placeholder="Company Name">
-            <input type="text" placeholder="Job Title">
-            <div class="form-row">
-                <input type="month" placeholder="Start Date">
-                <input type="month" placeholder="End Date">
-            </div>
-            <textarea placeholder="Job Description"></textarea>
-            <button class="btn btn-secondary">+ Add Experience</button>
-        </div>
+        [resumeBox, jobBox].forEach((box, index) => {
+            const textArea = index === 0 ? resumeText : jobText;
 
-        <button class="btn btn-primary">Save Resume</button>
-    </div>
+            // Click to paste
+            box.addEventListener('click', () => {
+                showTextArea(box, textArea);
+            });
+
+            // Drag and drop
+            box.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                box.style.borderColor = '#2557a7';
+            });
+
+            box.addEventListener('dragleave', () => {
+                box.style.borderColor = '#ddd';
+            });
+
+            box.addEventListener('drop', (e) => {
+                e.preventDefault();
+                box.style.borderColor = '#ddd';
+                
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        textArea.style.display = 'block';
+                        textArea.value = event.target.result;
+                        const heading = box.querySelector('h3');
+                        const paragraph = box.querySelector('p');
+                        if (heading) heading.style.display = 'none';
+                        if (paragraph) paragraph.style.display = 'none';
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            // Prevent textarea clicks from bubbling
+            textArea.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
+
+        scanButton.addEventListener('click', () => {
+            const resume = resumeText.value.trim();
+            const jobDesc = jobText.value.trim();
+
+            if (!resume || !jobDesc) {
+                alert('Please provide both resume and job description');
+                return;
+            }
+
+            // Store in sessionStorage and navigate
+            sessionStorage.setItem('resume_text', resume);
+            sessionStorage.setItem('job_desc_text', jobDesc);
+            window.location.href = '/result';
+        });
+
+        // Logo navigation
+        document.querySelector('.logo').addEventListener('click', () => {
+            window.location.href = '/';
+        });
+    });
+    </script>
 </body>
 </html>
