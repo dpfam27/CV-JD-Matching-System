@@ -293,28 +293,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Navigation functionality
-            document.querySelector('.logo').addEventListener('click', () => {
-                window.location.href = '/';
-            });
-
-            document.getElementById('historyButton').addEventListener('click', () => {
-                window.location.href = '/history';
-            });
-
-            document.getElementById('saveButton').addEventListener('click', () => {
-                alert('Scan saved to history!');
-                window.location.href = '/history';
-            });
-
-            // Process scan data if available
+            // Check if we have data to process
             const resumeText = sessionStorage.getItem('resume_text');
             const jobDescText = sessionStorage.getItem('job_desc_text');
             
             if (resumeText && jobDescText) {
-                // Clear sessionStorage
-                sessionStorage.removeItem('resume_text');
-                sessionStorage.removeItem('job_desc_text');
+                console.log('Found text to process');  // Debug log
                 
                 // Show loading state
                 document.querySelector('.score-circle').textContent = 'Loading...';
@@ -330,16 +314,23 @@
                         job_desc_text: jobDescText
                     })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data:', data);  // Debug log
+                    
+                    // Clear storage after successful processing
+                    sessionStorage.removeItem('resume_text');
+                    sessionStorage.removeItem('job_desc_text');
                     
                     // Update match score
                     const scoreCircle = document.querySelector('.score-circle');
-                    const scoreTitle = scoreCircle.nextElementSibling;
-                    const scoreDesc = scoreTitle.nextElementSibling;
+                    const scoreTitle = document.querySelector('.match-score h2');
+                    const scoreDesc = document.querySelector('.match-score p');
                     
                     scoreCircle.textContent = data.match_score + '%';
                     
@@ -352,35 +343,33 @@
                     }
                     
                     scoreDesc.textContent = `Your resume matches ${data.match_score}% of the job requirements`;
-
-                    // Update analysis content
-                    const analysisHTML = `
+        
+                    // Update skills analysis
+                    const analysisContent = `
                         <h3>Hard Skills Match</h3>
-                        ${Object.entries(data.skills_match).map(([skill, counts]) => `
+                        ${Object.entries(data.skills_match).map(([skill, [resume_count, jd_count]]) => `
                             <div class="skills-match">
                                 <div class="skill-name">${skill}</div>
-                                <div class="skill-count">${counts[0]}/${counts[1]}</div>
+                                <div class="skill-count">${resume_count}/${jd_count}</div>
                             </div>
                             <div class="progress-bar">
-                                <div class="progress" style="width: ${(counts[0] / counts[1] * 100)}%"></div>
+                                <div class="progress" style="width: ${(resume_count / jd_count * 100)}%"></div>
                             </div>
                         `).join('')}
                         
                         <h3>Keyword Match</h3>
                         <div style="margin-bottom: 1rem;">
                             ${Object.entries(data.skills_match)
-                                .filter(([_, counts]) => counts[0] >= counts[1])
-                                .map(([skill, _]) => `<span class="label label-blue">${skill}</span>`)
-                                .join('')}
-                            ${data.missing_keywords
-                                .map(keyword => `<span class="label label-yellow">missing: ${keyword}</span>`)
-                                .join('')}
+                                .filter(([_, [resume_count, jd_count]]) => resume_count >= jd_count)
+                                .map(([skill, _]) => `<span class="label label-blue">${skill}</span>`).join('')}
+                            ${data.missing_keywords.map(keyword => 
+                                `<span class="label label-yellow">missing: ${keyword}</span>`).join('')}
                         </div>
                     `;
-                    document.getElementById('analysis-content').innerHTML = analysisHTML;
-
+                    document.getElementById('analysis-content').innerHTML = analysisContent;
+        
                     // Update suggestions
-                    const suggestionsHTML = `
+                    const suggestionsContent = `
                         ${data.missing_keywords.length > 0 ? `
                             <div class="suggestion-item">
                                 <h3>Add Missing Keywords</h3>
@@ -389,38 +378,44 @@
                         ` : ''}
                         <div class="suggestion-item">
                             <h3>Quantify Achievements</h3>
-                            <p>Add metrics to your development experience</p>
+                            <p>Add specific metrics and results to strengthen your experience</p>
                         </div>
                         <div class="suggestion-item">
                             <h3>Technical Skills</h3>
-                            <p>Highlight more relevant projects and experience</p>
+                            <p>Focus on highlighting skills that match the job requirements</p>
                         </div>
                     `;
-                    document.getElementById('suggestions-content').innerHTML = suggestionsHTML;
-
-                    // Update course recommendations
-                    const coursesHTML = data.missing_keywords.map(keyword => `
-                        <div class="course-card">
-                            <div class="course-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
-                            </div>
-                            <h3>${keyword} Fundamentals</h3>
-                            <p>Master ${keyword} to improve your development skills</p>
-                            <div class="course-meta">
-                                <span class="duration">40 hours</span>
-                                <span class="platform">Various Platforms</span>
-                            </div>
-                            <a href="#" class="course-link">View Courses</a>
-                        </div>
-                    `).join('');
-                    document.getElementById('courses-content').innerHTML = coursesHTML;
+                    document.getElementById('suggestions-content').innerHTML = suggestionsContent;
+        
+                    // Update course recommendations if available
+                    if (data.course_recommendations && data.course_recommendations.length > 0) {
+                        const coursesContainer = document.getElementById('courses-content');
+                        if (coursesContainer) {
+                            coursesContainer.innerHTML = data.course_recommendations.map(course => `
+                                <div class="course-card">
+                                    <div class="course-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                                    </div>
+                                    <h3>${course.title}</h3>
+                                    <p>Master ${course.skill} to improve your job prospects</p>
+                                    <div class="course-meta">
+                                        <span>Rating: ${course.rating}</span>
+                                        <span>Price: ${course.price}</span>
+                                    </div>
+                                    <a href="#" class="course-link">View Course</a>
+                                </div>
+                            `).join('');
+                        }
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while processing your scan');
-                    // Show error state in UI
                     document.querySelector('.score-circle').textContent = 'Error';
+                    document.querySelector('.match-score h2').textContent = 'Analysis Failed';
+                    document.querySelector('.match-score p').textContent = 'An error occurred while processing your scan';
                 });
+            } else {
+                console.log('No text to process found in sessionStorage');  // Debug log
             }
         });
     </script>
