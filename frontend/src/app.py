@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, send_file
+from flask import Flask, render_template, request, jsonify, redirect, session, url_for, send_file
 from pathlib import Path
 import json
 import tensorflow as tf
@@ -141,6 +141,39 @@ def history():
     except Exception as e:
         return f"Error: {str(e)}", 500
 
+@app.route('/upload', methods=['POST'])
+def upload():
+    try:
+        # Get form data
+        resume_text = request.form.get('resume_text', '')
+        job_desc_text = request.form.get('job_desc_text', '')
+        
+        if not resume_text or not job_desc_text:
+            return jsonify({"error": "Both resume and job description are required"}), 400
+        
+        # Process the inputs using your ML model
+        # For demo, we'll use mock results
+        match_score = 85
+        skills_match = {
+            "JavaScript": (3, 3),
+            "React": (2, 3),
+            "Node.js": (1, 2)
+        }
+        missing_keywords = ["TypeScript", "AWS"]
+        
+        # Store results in session for demo
+        session['scan_result'] = {
+            "match_score": match_score,
+            "skills_match": skills_match,
+            "missing_keywords": missing_keywords
+        }
+        
+        # Redirect to result page
+        return redirect(url_for('result'))
+    except Exception as e:
+        print(f"Error in upload: {str(e)}")  # For debugging
+        return jsonify({"error": str(e)}), 500
+    
 if __name__ == '__main__':
     try:
         # Load ML models before starting the server
