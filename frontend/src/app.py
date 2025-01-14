@@ -6,9 +6,13 @@ import os
 from datetime import datetime
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
-from datetime import datetime
-from sklearn.feature_extraction.text import CountVectorizer
-import numpy as np
+import requests
+import base64
+from typing import List, Dict
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Explicitly set up all paths
 FRONTEND_DIR = Path(__file__).resolve().parent  
@@ -40,6 +44,87 @@ app.secret_key = 'your-secret-key-here'  # Required for session
 # Add configuration to disable caching
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+# Initialize Udemy Course Recommender
+class UdemyCourseRecommender:
+    def __init__(self, test_mode: bool = True):
+        self.test_mode = test_mode
+        self.base_url = 'https://www.udemy.com/api-2.0/'
+        
+        # Mock data for testing
+        self.mock_data = {
+            'python': [
+                {'title': 'Python Bootcamp 2024', 'url': '/python-bootcamp', 'rating': 4.8, 'price': '$13.99'},
+                {'title': 'Python for Data Science', 'url': '/python-data', 'rating': 4.6, 'price': '$12.99'}
+            ],
+            'javascript': [
+                {'title': 'Modern JavaScript', 'url': '/modern-js', 'rating': 4.7, 'price': '$11.99'},
+                {'title': 'Full Stack JavaScript', 'url': '/fullstack-js', 'rating': 4.5, 'price': '$14.99'}
+            ],
+            'react': [
+                {'title': 'React Complete Guide', 'url': '/react-guide', 'rating': 4.9, 'price': '$15.99'},
+                {'title': 'React and Redux', 'url': '/react-redux', 'rating': 4.7, 'price': '$14.99'}
+            ],
+            'node.js': [
+                {'title': 'Node.js Developer Course', 'url': '/nodejs-dev', 'rating': 4.8, 'price': '$12.99'},
+                {'title': 'Complete Node.js Guide', 'url': '/nodejs-complete', 'rating': 4.6, 'price': '$13.99'}
+            ]
+        }
+
+        if not test_mode:
+            self.client_id = os.getenv('UDEMY_CLIENT_ID')
+            self.client_secret = os.getenv('UDEMY_CLIENT_SECRET')
+            if not all([self.client_id, self.client_secret]):
+                print("Warning: Missing API credentials. Switching to test mode.")
+                self.test_mode = True
+            else:
+                self.headers = self._get_headers()
+
+    def _get_headers(self) -> Dict:
+        credentials = f"{self.client_id}:{self.client_secret}"
+        encoded = base64.b64encode(credentials.encode()).decode()
+        return {
+            'Authorization': f'Bearer {encoded}',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+
+    def search_courses(self, skill: str, limit: int = 3) -> List[Dict]:
+        if self.test_mode:
+            return self.mock_data.get(skill.lower(), [])[:limit]
+        
+        try:
+            endpoint = f"{self.base_url}courses/"
+            params = {
+                'search': skill,
+                'page_size': limit,
+                'ordering': 'highest-rated',
+                'ratings_gte': 4.0,
+                'fields[course]': 'title,url,price,rating'
+            }
+            response = requests.get(endpoint, headers=self.headers, params=params)
+            response.raise_for_status()
+            return response.json().get('results', [])
+        except Exception as e:
+            print(f"Error fetching courses: {e}")
+            return self.mock_data.get(skill.lower(), [])[:limit]
+
+    def get_recommendations(self, skills: List[str], limit: int = 5) -> List[Dict]:
+        all_courses = []
+        for skill in skills:
+            courses = self.search_courses(skill)
+            formatted = [{
+                'title': course['title'],
+                'url': course['url'],
+                'skill': skill,
+                'rating': course.get('rating', 'N/A'),
+                'price': course.get('price', 'N/A')
+            } for course in courses]
+            all_courses.extend(formatted)
+        return all_courses[:limit]
+
+# Initialize the course recommender
+course_recommender = UdemyCourseRecommender(test_mode=True)
 
 def load_ml_models():
     """Load and return ML models with error handling"""
@@ -206,6 +291,74 @@ def history():
         return render_template('History.html', scan_history=scan_history)
     except Exception as e:
         return f"Error: {str(e)}", 500
+    
+@app.route('/process_scan', methods=['POST'])
+def process_scan():
+    """Process the scan data and return results with course recommendations"""
+    try:
+        data = request.get_json()
+        resume_text = data.get('resume_text', '').lower()
+        job_desc_text = data.get('job_desc_text', '').lower()
+        
+        if not resume_text or not job_desc_text:
+            return jsonify({"error": "Both resume and job description are required"}), 400
+
+        # Process using the actual ML model
+        common_skills = ["python", "java", "javascript", "react", "node.js", "html", "css", 
+                        "sql", "aws", "docker", "kubernetes", "git", "agile", "typescript",
+                        "angular", "vue", "postgresql", "mongodb", "rest api", "graphql"]
+
+        # Count occurrences in both texts
+        vectorizer = CountVectorizer(vocabulary=common_skills)
+        resume_skills = vectorizer.fit_transform([resume_text])
+        jd_skills = vectorizer.fit_transform([job_desc_text])
+        
+        resume_skill_counts = resume_skills.toarray()[0]
+        jd_skill_counts = jd_skills.toarray()[0]
+
+        # Compare skills
+        skills_match = {}
+        missing_keywords = []
+        for skill, idx in vectorizer.vocabulary_.items():
+            resume_count = resume_skill_counts[idx]
+            jd_count = jd_skill_counts[idx]
+            if jd_count > 0:  # Only include skills mentioned in JD
+                skills_match[skill] = [resume_count, jd_count]
+                if resume_count == 0:
+                    missing_keywords.append(skill)
+
+        # Calculate match score
+        total_required = sum(1 for counts in skills_match.values() if counts[1] > 0)
+        matched = sum(1 for counts in skills_match.values() if counts[0] >= counts[1])
+        match_score = int((matched / total_required * 100) if total_required > 0 else 0)
+
+        # Get course recommendations for missing skills
+        course_recommendations = course_recommender.get_recommendations(missing_keywords)
+
+        # Store results
+        scan_result = {
+            "match_score": match_score,
+            "skills_match": skills_match,
+            "missing_keywords": missing_keywords,
+            "course_recommendations": course_recommendations,
+            "date": datetime.now().strftime("%Y-%m-%d")
+        }
+
+        # Store in history
+        if 'scan_history' not in session:
+            session['scan_history'] = []
+        
+        session['scan_history'].append({
+            "id": len(session['scan_history']) + 1,
+            "score": match_score,
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "skills": list(skills_match.keys())
+        })
+
+        return jsonify(scan_result)
+    except Exception as e:
+        print(f"Error in process_scan: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     try:
